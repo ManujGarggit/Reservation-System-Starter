@@ -3,6 +3,7 @@ package flight.reservation.order;
 import flight.reservation.Customer;
 import flight.reservation.flight.ScheduledFlight;
 import flight.reservation.payment.CreditCard;
+import flight.reservation.payment.PayPalAdapter;
 import flight.reservation.payment.Paypal;
 
 import java.util.Arrays;
@@ -65,22 +66,24 @@ public class FlightOrder extends Order {
         return card != null && card.isValid();
     }
 
-    public boolean processOrderWithPayPal(String email, String password) throws IllegalStateException {
+    public boolean processOrderWithPayPal(String email,String password) throws IllegalStateException {
+        PayPalAdapter  payPalAdapter = new PayPalAdapter(email, password,new Paypal());
         if (isClosed()) {
             // Payment is already proceeded
             return true;
         }
         // validate payment information
-        if (email == null || password == null || !email.equals(Paypal.DATA_BASE.get(password))) {
+        if(payPalAdapter.isValid()){
             throw new IllegalStateException("Payment information is not set or not valid.");
         }
-        boolean isPaid = payWithPayPal(email, password, this.getPrice());
+        boolean isPaid = payWithPayPal(payPalAdapter, this.getPrice());
         if (isPaid) {
             this.setClosed();
         }
         return isPaid;
     }
-
+   
+    
     public boolean payWithCreditCard(CreditCard card, double amount) throws IllegalStateException {
         if (cardIsPresentAndValid(card)) {
             System.out.println("Paying " + getPrice() + " using Credit Card.");
@@ -96,8 +99,8 @@ public class FlightOrder extends Order {
         }
     }
 
-    public boolean payWithPayPal(String email, String password, double amount) throws IllegalStateException {
-        if (email.equals(Paypal.DATA_BASE.get(password))) {
+    public boolean payWithPayPal(PayPalAdapter payPalAdapter, double amount) throws IllegalStateException {
+        if (payPalAdapter.isValid()) {
             System.out.println("Paying " + getPrice() + " using PayPal.");
             return true;
         } else {

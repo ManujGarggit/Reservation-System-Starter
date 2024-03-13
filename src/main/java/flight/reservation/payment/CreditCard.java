@@ -1,11 +1,12 @@
 package flight.reservation.payment;
+import flight.reservation.payment.Payment;
 
 import java.util.Date;
 
 /**
  * Dummy credit card class.
  */
-public class CreditCard {
+public class CreditCard implements Payment{
     private double amount;
     private String number;
     private Date date;
@@ -20,6 +21,7 @@ public class CreditCard {
         this.setValid();
     }
 
+
     public void setAmount(double amount) {
         this.amount = amount;
     }
@@ -28,10 +30,12 @@ public class CreditCard {
         return amount;
     }
 
+    @Override
     public boolean isValid() {
         return valid;
     }
 
+    @Override
     public void setValid() {
         // Dummy validation
         this.valid = number.length() > 0 && date.getTime() > System.currentTimeMillis() && !cvv.equals("000");
